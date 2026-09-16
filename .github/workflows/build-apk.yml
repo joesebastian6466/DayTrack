@@ -1,0 +1,42 @@
+name: Build DayTrack APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract DayTrack
+        run: |
+          unzip DayTrack_V5_PhoneBuild.zip -d source
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Create Android project
+        working-directory: source/DayTrack_V5_PhoneBuild
+        run: flutter create --platforms=android .
+
+      - name: Get packages
+        working-directory: source/DayTrack_V5_PhoneBuild
+        run: flutter pub get
+
+      - name: Build APK
+        working-directory: source/DayTrack_V5_PhoneBuild
+        run: flutter build apk --release
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DayTrack-APK
+          path: source/DayTrack_V5_PhoneBuild/build/app/outputs/flutter-apk/app-release.apk
